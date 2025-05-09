@@ -4,6 +4,8 @@ git config --global credential.helper store
 git config --global user.email "fordicus@naver.com"
 git pull
 git add *
+git commit -m init
+git push origin main
 
 """
 
@@ -61,5 +63,5 @@ if len(J) > 0:
 		os.system('git rm --cached %s' % j)
 
 os.system(f"""git commit -m "{gma()} {str(datetime.now())}: " """)
-os.system("git push origin master")
+os.system("git push origin main")
 os.system("git log -1")

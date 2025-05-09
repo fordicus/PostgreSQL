@@ -11,6 +11,7 @@ venv.bak/
 .env
 .venv
 
+push.py
 _Anaconda Prompt.lnk
 
 x64/
