@@ -1,79 +1,97 @@
-# 🐘 PostgreSQL Educational Examples — Key Patterns & Concepts
+# 🐘 PostgreSQL Educational Examples
 
-A summary of reusable techniques and patterns drawn from hands-on SQL + Python scripts.
+Practical, self‑contained scripts that showcase modern PostgreSQL + Python
+patterns (SQLAlchemy Core) for teaching and rapid prototyping.
 
 ---
 
-## 📌 `executemany` via List-of-Dicts (SQLAlchemy)
+## ✅ Runtime Stack
 
-Efficient, safe batch inserts using named placeholders and dictionary binding.
+* **Python 3.9+** (tested 3.9.19)
+* **SQLAlchemy Core 2.0+** (tested 2.0.34)
+* **PostgreSQL 17** (tested 17.4)
+
+```cmd
+:: Quick version check (Windows CMD)
+python --version & ^
+python -c "import sqlalchemy; print('SQLAlchemy:', sqlalchemy.__version__)" & ^
+psql --version
+```
+
+Output example
+
+```
+Python 3.9.19
+SQLAlchemy: 2.0.34
+psql (PostgreSQL) 17.4
+```
+
+---
+
+## 📜  Script Roster & Topics
+
+| Python File                        | Core Topics                                                   |
+| ---------------------------------- | ------------------------------------------------------------- |
+| `01_crud_cycle.py`                 | CRUD basics, batch **executemany**, tabulated output          |
+| `02_normalization_and_schema.py`   | 1 NF→3 NF walkthrough, composite PK, FK, rollback             |
+| `03_constraints_and_defaults.py`   | UNIQUE / PK, DEFAULT + NOT NULL, seq gaps, comp PK            |
+| `04_indexing_and_performance.py`   | **B‑Tree** vs seq scan, `EXPLAIN ANALYZE`, micro‑timing       |
+| `05_relational_modeling.py`        | Parent/child, FK actions, filtering & paging                  |
+| `06_analytics_pandas_bridge.py`    | `pandas.read_sql`, percentiles, windows vs subquery,          |
+|                                    | DataFrame → DB `to_sql()` round‑trip                          |
+| `07_json_and_fts.py`               | **JSONB @>**, GIN index, FTS, trigger upkeep                  |
+| `08_uuid_and_materialized_view.py` | UUID PK, VIEW vs **MATERIALIZED VIEW**                        |
+| `09_joins_and_set_operations.py`   | RIGHT / FULL JOIN, `COALESCE`, **UNION / INTERSECT / EXCEPT** |
+| `10_trigger_audit_null_sort.py`    | BEFORE trigger audit, `COALESCE`/`NULLIF`, custom sort        |
+
+---
+
+## 📌 Reusable Snippets
+
+### `executemany` via List‑of‑Dicts
+
+Efficient batch‑insert with named placeholders.
 
 ```python
 posts = [
     {"title": "Hello", "body": "First post"},
     {"title": "Tips",  "body": "Useful tips"}
 ]
-
 conn.execute(text("""
     INSERT INTO blog_posts (title, body)
     VALUES (:title, :body);
 """), posts)
 ```
 
-✅ **Benefits**
+*Readable, injection‑safe, works as true `executemany`.*
 
-* Easy to read, secure against SQL injection.
-* Executes as a true `executemany` under the hood.
-* Avoids manual string interpolation or for-loops.
+### VIEW vs MATERIALIZED VIEW
 
----
+* VIEW = reusable **SELECT macro** (executes fresh each time).
+* MVIEW = **cached SELECT result** (`REFRESH` required).
 
-## 📘 VIEW vs 📦 MATERIALIZED VIEW
+### JSONB + GIN Index — Fast Document Queries
 
-### VIEW = *a SELECT macro*
-
-* Acts like a reusable SQL snippet.
-* Internally expands into the original SELECT upon every access.
-
-### MATERIALIZED VIEW = *a SELECT result cache*
-
-* Physically stores the SELECT result in advance.
-* Requires manual `REFRESH MATERIALIZED VIEW` to stay up to date.
-* Excellent for precomputing expensive queries.
+* **JSONB** stores nested docs; `@>` operator tests containment.
+* **GIN** index accelerates these lookups by indexing internal keys.
 
 ---
 
-## 📦 JSONB + 🔍 GIN Index — Why They're Powerful Together
+## 📑 Guideline Excerpt (ChatGPT o3‑assisted)
 
-### ✅ JSONB (Binary JSON)
+> The full rules live in
+> `PostgreSQL_educational_Python_script_guidelines.md` and were iteratively
+> refined with ChatGPT o3. Key points:
+>
+> * 80‑char width, ASCII console
+> * `executemany()` mandatory for ≥3 rows
+> * Central `timed_read_sql()` helper reused across files
+> * Python 3.9 typing (`Optional`, `Union`)—no `A | B` pipe syntax
+> * Inline comments for every new SQL operator & keyword
 
-* Store structured documents with nested fields, arrays, or mixed types.
-* Ideal for logs, dynamic schemas, or optional attributes.
-* Enables key/value filtering within the JSON structure.
-
-### 🔍 GIN Index (Generalized Inverted Index)
-
-* Efficiently indexes elements **inside** arrays or JSONB fields.
-* Enables fast search for expressions like `data @> '{"skills": ["skill1"]}'`.
-
-### 🧠 Use them together when:
-
-* Filtering by inner JSON structure is required.
-* Query performance is critical on large datasets.
-
-### 💡 Example
-
-```sql
--- Slow without index:
-SELECT * FROM avengers_json
-WHERE data @> '{"skills": ["skill1"]}';
-
--- Faster with GIN index:
-CREATE INDEX idx_aj_data
-ON avengers_json
-USING GIN (data jsonb_path_ops);
-```
+See the guideline file for the complete table of rules.
 
 ---
 
-All examples are 100% runnable via Python 3.9+ with SQLAlchemy Core + PostgreSQL.
+All examples are fully runnable 🠚 clone, set `psql` creds, and `python` any
+script. Enjoy exploring modern PostgreSQL patterns!
