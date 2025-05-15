@@ -62,6 +62,9 @@ if len(J) > 0:
 
 		os.system('git rm --cached %s' % j)
 
-os.system(f"""git commit -m "{gma()} {str(datetime.now())}: " """)
+gma_short   = gma().split(':')[-3:]
+commit_msg  = f"{'-'.join(gma_short)} {datetime.now()}"
+os.system(f'git commit -m "{commit_msg}: "')
+#os.system(f"""git commit -m "{gma()} {str(datetime.now())}: " """)
 os.system("git push origin main")
 os.system("git log -1")
